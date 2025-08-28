@@ -29,12 +29,62 @@
       margin-bottom: 20px;
     }
 
-    .project-image {
+    /* SLIDER */
+    .slider {
+      position: relative;
+      max-width: 100%;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .slides {
+      display: none;
       width: 100%;
       height: auto;
       border-radius: 10px;
-      margin-bottom: 25px;
     }
+    .slides.active {
+      display: block;
+      animation: fade 0.5s ease;
+    }
+    @keyframes fade {
+      from { opacity: 0.2; }
+      to   { opacity: 1; }
+    }
+
+    .prev, .next {
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 12px;
+      background-color: rgba(60,79,255,0.7);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 18px;
+      user-select: none;
+      transition: background-color 0.3s;
+    }
+    .prev:hover, .next:hover { background-color: #2f38cc; }
+    .prev { left: 10px; }
+    .next { right: 10px; }
+
+    .dots {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .dot {
+      cursor: pointer;
+      height: 12px;
+      width: 12px;
+      margin: 0 5px;
+      background-color: #bbb;
+      border-radius: 50%;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+    .dot.active { background-color: #3C4FFF; }
 
     .project-description {
       font-size: 16px;
@@ -52,32 +102,41 @@
       text-decoration: none;
       font-weight: 500;
       transition: background-color 0.3s;
+      margin-bottom: 10px;
     }
-
-    .back-btn:hover {
-      background-color: #2f38cc;
-    }
+    .back-btn:hover { background-color: #2f38cc; }
   </style>
 </head>
 <body>
   <div class="container">
     <a href="/index.html" class="back-btn">← Back</a>
-    <h1>Custom Sheet Metal Enclosures for CNC Machines</h1>
+    <h1>Custom Sheet Metal Enclosures for CNC Machines</h1>
 
-<img src="/assets/project3.jpg" alt="Custom Sheet Metal Enclosures for CNC Machines" class="project-image"/>
-<div class="project-description">
-    <p>
+    <!-- IMAGE SLIDER -->
+    <div class="slider" id="slider">
+      <img src="/assets/project3.jpg"  alt="Enclosure view 1" class="slides active">
+      <img src="/assets/SDG220.0.JPG" alt="Enclosure view 2" class="slides">
+      <img src="/assets/SDG220.3.JPG" alt="Enclosure view 3" class="slides">
+      <img src="/assets/SDG220.6.JPG" alt="Enclosure view 4" class="slides">
+      <img src="/assets/SDG220.7.JPG" alt="Enclosure view 5" class="slides">
+      <img src="/assets/SDG220.8.JPG" alt="Enclosure view 6" class="slides">
+      <img src="/assets/SDG220.9.JPG" alt="Enclosure view 7" class="slides">
+      <button class="prev" type="button" aria-label="Previous slide">&#10094;</button>
+      <button class="next" type="button" aria-label="Next slide">&#10095;</button>
+    </div>
+    <div class="dots" id="dots"></div>
+
+    <!-- DESCRIPTION -->
+    <div class="project-description">
+      <p>
         I led the design and development of a custom <strong>sheet metal enclosure</strong> for a high-precision CNC drilling machine, focused on enhancing both functionality and industrial aesthetics. The enclosure was engineered to ensure durability, safety, and ease of maintenance, while aligning with modern shop-floor design standards.
       </p>
-      
       <p>
         Using <strong>SolidWorks</strong>, I created detailed 3D models, assemblies, and production drawings, optimizing panel fitment, cutouts, and access points to support the machine's operation and servicing needs. The enclosure was manufactured with precision-cut and tightly sealed panels to ensure minimal leakage and maximum protection.
       </p>
-      
       <p>
         This solution significantly improved machine reliability, extended component lifespan, and reduced maintenance overhead. It also contributed to a cleaner, safer, and more visually cohesive work environment.
       </p>
-      
       <p><strong>Key Features:</strong></p>
       <ul>
         <li>Precision-sealed panels to minimize oil and coolant leakage</li>
@@ -86,11 +145,64 @@
         <li>Clean, streamlined industrial design for a professional shop-floor appearance</li>
         <li>Modular construction for easier manufacturing and on-site assembly</li>
       </ul>
-      
       <p><strong>Skills & Tools:</strong> SolidWorks, Sheet Metal Design, 3D Modeling, Industrial Enclosure Design, 2D Drafting, BOM Creation, Manufacturing Documentation</p>
-      
-</div>
-
+    </div>
   </div>
+
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slides"));
+      const prevBtn = document.querySelector(".prev");
+      const nextBtn = document.querySelector(".next");
+      const dotsWrap = document.getElementById("dots");
+      const slider = document.getElementById("slider");
+
+      if (slides.length === 0) return;
+
+      // Build dots based on slide count
+      const dots = slides.map((_, i) => {
+        const s = document.createElement("span");
+        s.className = "dot" + (i === 0 ? " active" : "");
+        s.addEventListener("click", () => goTo(i));
+        dotsWrap.appendChild(s);
+        return s;
+      });
+
+      let i = 0;
+      function setActive(idx) {
+        slides[i].classList.remove("active");
+        dots[i].classList.remove("active");
+        i = (idx + slides.length) % slides.length;
+        slides[i].classList.add("active");
+        dots[i].classList.add("active");
+      }
+      function next() { setActive(i + 1); }
+      function prev() { setActive(i - 1); }
+      function goTo(idx) { setActive(idx); resetAuto(); }
+
+      if (slides.length < 2) {
+        // Hide controls if only one image
+        prevBtn.style.display = "none";
+        nextBtn.style.display = "none";
+        dotsWrap.style.display = "none";
+        return;
+      }
+
+      prevBtn.addEventListener("click", () => { prev(); resetAuto(); });
+      nextBtn.addEventListener("click", () => { next(); resetAuto(); });
+
+      // Keyboard support
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") { prev(); resetAuto(); }
+        if (e.key === "ArrowRight") { next(); resetAuto(); }
+      });
+
+      // Auto slide every 5s, pause on hover
+      let timer = setInterval(next, 5000);
+      function resetAuto() { clearInterval(timer); timer = setInterval(next, 5000); }
+      slider.addEventListener("mouseenter", () => clearInterval(timer));
+      slider.addEventListener("mouseleave", resetAuto);
+    })();
+  </script>
 </body>
 </html>
